@@ -4,20 +4,21 @@ using UnityEngine.UI;
 
 public class HealthBar : MonoBehaviour
 {
+    [SerializeField] private Gradient gradient;
+
     public Slider slider;
-    public Gradient gradient;
-    public Image fill;
+    private Image fill;
 
-    GameObject playerHealthBar;
-    Slider playerHealthSlider;
-    Image playerHealthFill;
+    private GameObject playerHealthBar;
+    private Slider playerHealthSlider;
+    private Image playerHealthFill;
 
-    Canvas canvas;
-    Slider sliderEnemy;
-    Image fillEnemy;
+    private Canvas enemyCanvas;
+    private Slider enemySlider;
+    private Image enemyFill;
 
     private void Start()
-    {               
+    {
         if (gameObject.tag is "Player")
         {
             playerHealthBar = GameObject.Find("PlayerHealthBar");
@@ -26,16 +27,20 @@ public class HealthBar : MonoBehaviour
 
             slider = playerHealthSlider;
             fill = playerHealthFill;
+
+            slider.maxValue = gameObject.GetComponent<PlayerScript>().maxHealth;
         }
 
-        if (gameObject.tag is "Enemy")
+        if (gameObject.tag is "Enemy" || gameObject.tag is "Boss")
         {
-            canvas = gameObject.GetComponentsInChildren<Canvas>().ToList().Find(x => x.name.Contains("Canvas_Enemy"));
-            sliderEnemy = canvas.GetComponentsInChildren<Slider>().ToList().Find(x => x.name.Contains("EnemyHealthBar"));
-            fillEnemy = canvas.GetComponentsInChildren<Image>().ToList().Find(x => x.name.Contains("EnemyFill"));
+            enemyCanvas = gameObject.GetComponentsInChildren<Canvas>().ToList().Find(x => x.name.Contains("Canvas_Enemy"));
+            enemySlider = enemyCanvas.GetComponentsInChildren<Slider>().ToList().Find(x => x.name.Contains("EnemyHealthBar"));
+            enemyFill = enemyCanvas.GetComponentsInChildren<Image>().ToList().Find(x => x.name.Contains("EnemyFill"));
 
-            slider = sliderEnemy;
-            fill = fillEnemy;
+            slider = enemySlider;
+            fill = enemyFill;
+
+            slider.maxValue = gameObject.GetComponent<Enemy>().maxHealth;
         }
 
         fill.color = gradient.Evaluate(1f);

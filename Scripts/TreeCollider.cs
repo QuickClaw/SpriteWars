@@ -1,28 +1,28 @@
-using System.Linq;
 using UnityEngine;
 
 public class TreeCollider : MonoBehaviour
 {
-    ParticleSystem treeHitEffect;
-    AudioSource treeHitAS;
+    [SerializeField] private ParticleSystem treeHitEffect;
 
-    Vector3 collisionPoint;
+    [SerializeField] private AudioSource treeHitAS;
+    [SerializeField] private AudioClip treeHitAudioClip;
 
-    void Start()
+    private Vector3 collisionPoint;
+
+    private void Start()
     {
-        treeHitEffect = gameObject.GetComponentsInChildren<ParticleSystem>().ToList().Find(x => x.name.Contains("treeHit effect"));
-        treeHitAS = gameObject.GetComponent<AudioSource>();
+        treeHitAS.volume = 0.07f;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag is "Projectile")
+        if (collision.tag is "Projectile" || collision.tag is "Enemy Bullet")
         {
             collisionPoint = collision.gameObject.GetComponent<Collider2D>().bounds.ClosestPoint(transform.position);
-            treeHitEffect.transform.position = collisionPoint;
-            treeHitEffect.Play();
 
-            treeHitAS.Play();
+            Instantiate(treeHitEffect, collisionPoint, Quaternion.identity);
+
+            treeHitAS.PlayOneShot(treeHitAudioClip);
 
             Destroy(collision.gameObject);
         }

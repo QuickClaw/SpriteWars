@@ -2,264 +2,154 @@ using UnityEngine;
 
 public class PickupProjectile : MonoBehaviour
 {
-    GetAudioSources GetAudioSources;
-    GetParticles GetParticles;
-    ProjectileProperties ProjectileProperties;
+    public ProjectileProperties ProjectileProperties;
+    public Shooting Shooting;
+    public PlayerScript PlayerScript;
 
-    public static GameObject fire, ice, poison, bullet, missile, arrow, electric;
+    public GameObject fire, ice, poison, bullet, missile, arrow, electric, swordAttack;
 
-    private GameObject fireWand, iceWand, snake, autoGun, bazooka, bow, lightning;
-    private GameObject rotatePoint, player;
+    [SerializeField] private GameObject fireWand, iceWand, snake, autoGun, bazooka, bow, lightning, sword;
+    [SerializeField] private GameObject rotatePoint;
 
-    private AudioSource pickUpAS, shootingAS;
+    [SerializeField] private ParticleSystem pickFire, pickIce, pickPoison, pickBullet, pickMissile, pickBow, pickElectric, pickSword;
+    [SerializeField] private ParticleSystem fireVFX, iceVFX, poisonVFX, bulletVFX, missileVFX, bowVFX, electricVFX, swordVFX;
+
+    [SerializeField] private AudioClip fireShoot, iceShoot, poisonShoot, bulletShoot, missileShoot, bowShoot, electricShoot, swordShoot;
+
+    [SerializeField] private GameObject pickupArea_Fire;
+    [SerializeField] private GameObject pickupArea_Ice;
+    [SerializeField] private GameObject pickupArea_Poison;
+    [SerializeField] private GameObject pickupArea_Gun;
+    [SerializeField] private GameObject pickupArea_Bazooka;
+    [SerializeField] private GameObject pickupArea_Bow;
+    [SerializeField] private GameObject pickupArea_Electric;
+    [SerializeField] private GameObject pickupArea_Sword;
+
+    public AudioSource pickUpAS, shootingAS;
 
     private bool isFire, isIce, isPoison, isBullet, isMissile, isArrow, isElectric;
 
+    public bool isSword;
+
     void Start()
     {
-        GetAudioSources = FindObjectOfType<GetAudioSources>();
-        GetParticles = FindObjectOfType<GetParticles>();
-        ProjectileProperties = FindObjectOfType<ProjectileProperties>();
-
-        rotatePoint = GameObject.Find("RotatePoint");
-        shootingAS = rotatePoint.GetComponent<AudioSource>();
-
-        player = GameObject.Find("Player");
-        pickUpAS = player.GetComponent<AudioSource>();
-
-        fire = GameObject.Find("Fire");
-        ice = GameObject.Find("Ice");
-        poison = GameObject.Find("Poison");
-        bullet = GameObject.Find("Bullet");
-        missile = GameObject.Find("Missile");
-        arrow = GameObject.Find("Arrow");
-        electric = GameObject.Find("Electric");
-
-        fireWand = GameObject.Find("Sprite_fireWand");
-        iceWand = GameObject.Find("Sprite_iceWand");
-        snake = GameObject.Find("Sprite_snake");
-        autoGun = GameObject.Find("Sprite_autoGun");
-        bazooka = GameObject.Find("Sprite_bazooka");
-        bow = GameObject.Find("Sprite_bow");
-        lightning = GameObject.Find("Sprite_lightning");
-
-        #region PlayerPrefs
-        if (PlayerPrefs.HasKey("weapon"))
+        if (PlayerPrefs.HasKey("Weapon"))
         {
-            if (PlayerPrefs.GetString("weapon") == "Fire")
-            {
-                Shooting.projectile = fire;
+            if (PlayerPrefs.GetString("Weapon") == "Fire")
+                FirePickup();
 
-                Projectile.force = ProjectileProperties.fireForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.fireRate;
-                Projectile.damage = ProjectileProperties.fireDamage;
+            if (PlayerPrefs.GetString("Weapon") == "Ice")
+                IcePickup();
 
-                fireWand.GetComponent<SpriteRenderer>().enabled = true;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
+            if (PlayerPrefs.GetString("Weapon") == "Poison")
+                PoisonPickup();
 
-                shootingAS.clip = GetAudioSources.shootingSounds[0];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[0];
+            if (PlayerPrefs.GetString("Weapon") == "Gun")
+                GunPickup();
 
-                isFire = true;
-                isIce = false;
-                isPoison = false;
-                isBullet = false;
-                isMissile = false;
-                isArrow = false;
-                isElectric = false;
-            }
+            if (PlayerPrefs.GetString("Weapon") == "Bazooka")
+                BazookaPickup();
 
-            if (PlayerPrefs.GetString("weapon") == "Ice")
-            {
-                Shooting.projectile = ice;
+            if (PlayerPrefs.GetString("Weapon") == "Bow")
+                BowPickup();
 
-                Projectile.force = ProjectileProperties.iceForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.iceRate;
-                Projectile.damage = ProjectileProperties.iceDamage;
+            if (PlayerPrefs.GetString("Weapon") == "Electric")
+                ElectricPickup();
 
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = true;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                shootingAS.clip = GetAudioSources.shootingSounds[1];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[1];
-
-                isFire = false;
-                isIce = true;
-                isPoison = false;
-                isBullet = false;
-                isMissile = false;
-                isArrow = false;
-                isElectric = false;
-            }
-
-            if (PlayerPrefs.GetString("weapon") == "Poison")
-            {
-                Shooting.projectile = poison;
-
-                Projectile.force = ProjectileProperties.poisonForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.poisonRate;
-                Projectile.damage = ProjectileProperties.poisonDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = true;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                shootingAS.clip = GetAudioSources.shootingSounds[2];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[2];
-
-                isFire = false;
-                isIce = false;
-                isPoison = true;
-                isBullet = false;
-                isMissile = false;
-                isArrow = false;
-                isElectric = false;
-            }
-
-            if (PlayerPrefs.GetString("weapon") == "Bullet")
-            {
-                Shooting.projectile = bullet;
-
-                Projectile.force = ProjectileProperties.bulletForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.bulletRate;
-                Projectile.damage = ProjectileProperties.bulletDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = true;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                shootingAS.clip = GetAudioSources.shootingSounds[3];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[3];
-
-                isFire = false;
-                isIce = false;
-                isPoison = false;
-                isBullet = true;
-                isMissile = false;
-                isArrow = false;
-                isElectric = false;
-            }
-
-            if (PlayerPrefs.GetString("weapon") == "Missile")
-            {
-                Shooting.projectile = missile;
-
-                Projectile.force = ProjectileProperties.missileForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.missileRate;
-                Projectile.damage = ProjectileProperties.missileDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = true;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                shootingAS.clip = GetAudioSources.shootingSounds[4];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[4];
-
-                isFire = false;
-                isIce = false;
-                isPoison = false;
-                isBullet = false;
-                isMissile = true;
-                isArrow = false;
-                isElectric = false;
-            }
-
-            if (PlayerPrefs.GetString("weapon") == "Arrow")
-            {
-                Shooting.projectile = arrow;
-
-                Projectile.force = ProjectileProperties.arrowForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.arrowRate;
-                Projectile.damage = ProjectileProperties.arrowDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = true;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                shootingAS.clip = GetAudioSources.shootingSounds[5];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[5];
-
-                isFire = false;
-                isIce = false;
-                isPoison = false;
-                isBullet = false;
-                isMissile = false;
-                isArrow = true;
-                isElectric = false;
-            }
-
-            if (PlayerPrefs.GetString("weapon") == "Electric")
-            {
-                Shooting.projectile = electric;
-
-                Projectile.force = ProjectileProperties.electricForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.electriceRate;
-                Projectile.damage = ProjectileProperties.electricDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = true;
-
-                shootingAS.clip = GetAudioSources.shootingSounds[6];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[6];
-
-                isFire = false;
-                isIce = false;
-                isPoison = false;
-                isBullet = false;
-                isMissile = false;
-                isArrow = false;
-                isElectric = true;
-            }
+            if (PlayerPrefs.GetString("Weapon") == "Sword")
+                SwordPickup();
         }
         else
+            FirePickup();
+
+        if (PlayerPrefs.GetInt("FireUnlocked") == 1)
         {
-            Shooting.projectile = fire;
+            pickupArea_Fire.SetActive(true);
+        }
 
-            Projectile.force = ProjectileProperties.fireForce;
-            Projectile.timeBetweenFiring = ProjectileProperties.fireRate;
-            Projectile.damage = ProjectileProperties.fireDamage;
+        if (PlayerPrefs.GetInt("IceUnlocked") == 1)
+        {
+            pickupArea_Ice.SetActive(true);
+        }
 
-            fireWand.GetComponent<SpriteRenderer>().enabled = true;
-            iceWand.GetComponent<SpriteRenderer>().enabled = false;
-            snake.GetComponent<SpriteRenderer>().enabled = false;
-            autoGun.GetComponent<SpriteRenderer>().enabled = false;
-            bazooka.GetComponent<SpriteRenderer>().enabled = false;
-            bow.GetComponent<SpriteRenderer>().enabled = false;
-            lightning.GetComponent<SpriteRenderer>().enabled = false;
+        if (PlayerPrefs.GetInt("PoisonUnlocked") == 1)
+        {
+            pickupArea_Poison.SetActive(true);
+        }
 
-            shootingAS.clip = GetAudioSources.shootingSounds[0];
-            GetParticles.shootingParticle = GetParticles.projectileParticles[0];
+        if (PlayerPrefs.GetInt("GunUnlocked") == 1)
+        {
+            pickupArea_Gun.SetActive(true);
+        }
+
+        if (PlayerPrefs.GetInt("BazookaUnlocked") == 1)
+        {
+            pickupArea_Bazooka.SetActive(true);
+        }
+
+        if (PlayerPrefs.GetInt("BowUnlocked") == 1)
+        {
+            pickupArea_Bow.SetActive(true);
+        }
+
+        if (PlayerPrefs.GetInt("ElectricUnlocked") == 1)
+        {
+            pickupArea_Electric.SetActive(true);          
+        }
+
+        if (PlayerPrefs.GetInt("SwordUnlocked") == 1)
+        {
+            pickupArea_Sword.SetActive(true);
+        }
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
+            PlayerPrefs.DeleteAll();
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag is "Fire")
+            FirePickup();
+
+        if (collision.tag is "Ice")
+            IcePickup();
+
+        if (collision.tag is "Poison")
+            PoisonPickup();
+
+        if (collision.tag is "Bullet")
+            GunPickup();
+
+        if (collision.tag is "Missile")
+            BazookaPickup();
+
+        if (collision.tag is "Arrow")
+            BowPickup();
+
+        if (collision.tag is "Electric")
+            ElectricPickup();
+
+        if (collision.tag is "Sword")
+            SwordPickup();
+    }
+
+    #region Pickup Methods
+    public void FirePickup()
+    {
+        if (!isFire)
+        {
+            Shooting.projectilePrefab = fire;
+            Shooting.force = ProjectileProperties.fireForce;
+            Shooting.timeBetweenFiring = PlayerScript.Fire.GetComponent<ProjectileDamage>().rate;
+            Shooting.shootingParticle = fireVFX;
+
+            shootingAS.clip = fireShoot;
+
+            pickUpAS.Play();
+            pickFire.Play();
 
             isFire = true;
             isIce = false;
@@ -268,283 +158,287 @@ public class PickupProjectile : MonoBehaviour
             isMissile = false;
             isArrow = false;
             isElectric = false;
+            isSword = false;
+
+            fireWand.GetComponent<SpriteRenderer>().enabled = true;
+            iceWand.GetComponent<SpriteRenderer>().enabled = false;
+            snake.GetComponent<SpriteRenderer>().enabled = false;
+            autoGun.GetComponent<SpriteRenderer>().enabled = false;
+            bazooka.GetComponent<SpriteRenderer>().enabled = false;
+            bow.GetComponent<SpriteRenderer>().enabled = false;
+            lightning.GetComponent<SpriteRenderer>().enabled = false;
+            sword.GetComponent<SpriteRenderer>().enabled = false;
+
+            PlayerPrefs.DeleteKey("Weapon");
+            PlayerPrefs.SetString("Weapon", "Fire");
+            PlayerPrefs.SetInt("FireUnlocked", 1);
         }
-        #endregion
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void IcePickup()
     {
-        #region Fire
-        if (collision.tag is "Fire")
+        if (!isIce)
         {
-            if (!isFire)
-            {
-                Shooting.projectile = fire;
+            Shooting.projectilePrefab = ice;
+            Shooting.force = ProjectileProperties.iceForce;
+            Shooting.timeBetweenFiring = PlayerScript.Ice.GetComponent<ProjectileDamage>().rate;
+            Shooting.shootingParticle = iceVFX;
 
-                Projectile.force = ProjectileProperties.fireForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.fireRate;
-                Projectile.damage = ProjectileProperties.fireDamage;
+            shootingAS.clip = iceShoot;
 
-                fireWand.GetComponent<SpriteRenderer>().enabled = true;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
+            pickUpAS.Play();
+            pickIce.Play();
 
-                pickUpAS.Play();
-                GetParticles.pickupParticles[0].Play();
+            isFire = false;
+            isIce = true;
+            isPoison = false;
+            isBullet = false;
+            isMissile = false;
+            isArrow = false;
+            isElectric = false;
+            isSword = false;
 
-                shootingAS.clip = GetAudioSources.shootingSounds[0];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[0];
+            fireWand.GetComponent<SpriteRenderer>().enabled = false;
+            iceWand.GetComponent<SpriteRenderer>().enabled = true;
+            snake.GetComponent<SpriteRenderer>().enabled = false;
+            autoGun.GetComponent<SpriteRenderer>().enabled = false;
+            bazooka.GetComponent<SpriteRenderer>().enabled = false;
+            bow.GetComponent<SpriteRenderer>().enabled = false;
+            lightning.GetComponent<SpriteRenderer>().enabled = false;
+            sword.GetComponent<SpriteRenderer>().enabled = false;
 
-                isFire = true;
-                isIce = false;
-                isPoison = false;
-                isBullet = false;
-                isMissile = false;
-                isArrow = false;
-                isElectric = false;
-
-                PlayerPrefs.DeleteKey("weapon");
-                PlayerPrefs.SetString("weapon", collision.tag);
-            }
+            PlayerPrefs.DeleteKey("Weapon");
+            PlayerPrefs.SetString("Weapon", "Ice");
+            PlayerPrefs.SetInt("IceUnlocked", 1);
         }
-        #endregion
-
-        #region Ice
-        if (collision.tag is "Ice")
-        {
-            if (!isIce)
-            {
-                Shooting.projectile = ice;
-
-                Projectile.force = ProjectileProperties.iceForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.iceRate;
-                Projectile.damage = ProjectileProperties.iceDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = true;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                pickUpAS.Play();
-                GetParticles.pickupParticles[1].Play();
-
-                shootingAS.clip = GetAudioSources.shootingSounds[1];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[1];
-
-                isFire = false;
-                isIce = true;
-                isPoison = false;
-                isBullet = false;
-                isMissile = false;
-                isArrow = false;
-                isElectric = false;
-
-                PlayerPrefs.DeleteKey("weapon");
-                PlayerPrefs.SetString("weapon", collision.tag);
-            }
-        }
-        #endregion
-
-        #region Poison
-        if (collision.tag is "Poison")
-        {
-            if (!isPoison)
-            {
-                Shooting.projectile = poison;
-
-                Projectile.force = ProjectileProperties.poisonForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.poisonRate;
-                Projectile.damage = ProjectileProperties.poisonDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = true;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                pickUpAS.Play();
-                GetParticles.pickupParticles[2].Play();
-
-                shootingAS.clip = GetAudioSources.shootingSounds[2];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[2];
-
-                isFire = false;
-                isIce = false;
-                isPoison = true;
-                isBullet = false;
-                isMissile = false;
-                isArrow = false;
-                isElectric = false;
-
-                PlayerPrefs.DeleteKey("weapon");
-                PlayerPrefs.SetString("weapon", collision.tag);
-            }
-        }
-        #endregion
-
-        #region Bullet
-        if (collision.tag is "Bullet")
-        {
-            if (!isBullet)
-            {
-                Shooting.projectile = bullet;
-
-                Projectile.force = ProjectileProperties.bulletForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.bulletRate;
-                Projectile.damage = ProjectileProperties.bulletDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = true;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                pickUpAS.Play();
-                GetParticles.pickupParticles[3].Play();
-
-                shootingAS.clip = GetAudioSources.shootingSounds[3];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[3];
-
-                isFire = false;
-                isIce = false;
-                isPoison = false;
-                isBullet = true;
-                isMissile = false;
-                isArrow = false;
-                isElectric = false;
-
-                PlayerPrefs.DeleteKey("weapon");
-                PlayerPrefs.SetString("weapon", collision.tag);
-            }
-        }
-        #endregion
-
-        #region Missile
-        if (collision.tag is "Missile")
-        {
-            if (!isMissile)
-            {
-                Shooting.projectile = missile;
-
-                Projectile.force = ProjectileProperties.missileForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.missileRate;
-                Projectile.damage = ProjectileProperties.missileDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = true;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                pickUpAS.Play();
-                GetParticles.pickupParticles[4].Play();
-
-                shootingAS.clip = GetAudioSources.shootingSounds[4];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[4];
-
-                isFire = false;
-                isIce = false;
-                isPoison = false;
-                isBullet = false;
-                isMissile = true;
-                isArrow = false;
-                isElectric = false;
-
-                PlayerPrefs.DeleteKey("weapon");
-                PlayerPrefs.SetString("weapon", collision.tag);
-            }
-        }
-        #endregion        
-
-        #region Arrow
-        if (collision.tag is "Arrow")
-        {
-            if (!isArrow)
-            {
-                Shooting.projectile = arrow;
-
-                Projectile.force = ProjectileProperties.arrowForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.arrowRate;
-                Projectile.damage = ProjectileProperties.arrowDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = true;
-                lightning.GetComponent<SpriteRenderer>().enabled = false;
-
-                pickUpAS.Play();
-                GetParticles.pickupParticles[5].Play();
-
-                shootingAS.clip = GetAudioSources.shootingSounds[5];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[5];
-
-                isFire = false;
-                isIce = false;
-                isPoison = false;
-                isBullet = false;
-                isMissile = false;
-                isArrow = true;
-                isElectric = false;
-
-                PlayerPrefs.DeleteKey("weapon");
-                PlayerPrefs.SetString("weapon", collision.tag);
-            }
-        }
-        #endregion   
-
-        #region Electric
-        if (collision.tag is "Electric")
-        {
-            if (!isElectric)
-            {
-                Shooting.projectile = electric;
-
-                Projectile.force = ProjectileProperties.electricForce;
-                Projectile.timeBetweenFiring = ProjectileProperties.electriceRate;
-                Projectile.damage = ProjectileProperties.electricDamage;
-
-                fireWand.GetComponent<SpriteRenderer>().enabled = false;
-                iceWand.GetComponent<SpriteRenderer>().enabled = false;
-                snake.GetComponent<SpriteRenderer>().enabled = false;
-                autoGun.GetComponent<SpriteRenderer>().enabled = false;
-                bazooka.GetComponent<SpriteRenderer>().enabled = false;
-                bow.GetComponent<SpriteRenderer>().enabled = false;
-                lightning.GetComponent<SpriteRenderer>().enabled = true;
-
-                pickUpAS.Play();
-                GetParticles.pickupParticles[6].Play();
-
-                shootingAS.clip = GetAudioSources.shootingSounds[6];
-                GetParticles.shootingParticle = GetParticles.projectileParticles[6];
-
-                isFire = false;
-                isIce = false;
-                isPoison = false;
-                isBullet = false;
-                isMissile = false;
-                isArrow = false;
-                isElectric = true;
-
-                PlayerPrefs.DeleteKey("weapon");
-                PlayerPrefs.SetString("weapon", collision.tag);
-            }
-        }
-        #endregion   
     }
+
+    public void PoisonPickup()
+    {
+        if (!isPoison)
+        {
+            Shooting.projectilePrefab = poison;
+            Shooting.force = ProjectileProperties.poisonForce;
+            Shooting.timeBetweenFiring = PlayerScript.Poison.GetComponent<ProjectileDamage>().rate;
+            Shooting.shootingParticle = poisonVFX;
+
+            shootingAS.clip = poisonShoot;
+
+            pickUpAS.Play();
+            pickPoison.Play();
+
+            isFire = false;
+            isIce = false;
+            isPoison = true;
+            isBullet = false;
+            isMissile = false;
+            isArrow = false;
+            isElectric = false;
+            isSword = false;
+
+            fireWand.GetComponent<SpriteRenderer>().enabled = false;
+            iceWand.GetComponent<SpriteRenderer>().enabled = false;
+            snake.GetComponent<SpriteRenderer>().enabled = true;
+            autoGun.GetComponent<SpriteRenderer>().enabled = false;
+            bazooka.GetComponent<SpriteRenderer>().enabled = false;
+            bow.GetComponent<SpriteRenderer>().enabled = false;
+            lightning.GetComponent<SpriteRenderer>().enabled = false;
+            sword.GetComponent<SpriteRenderer>().enabled = false;
+
+            PlayerPrefs.DeleteKey("Weapon");
+            PlayerPrefs.SetString("Weapon", "Poison");
+            PlayerPrefs.SetInt("PoisonUnlocked", 1);
+        }
+    }
+
+    public void GunPickup()
+    {
+        if (!isBullet)
+        {
+            Shooting.projectilePrefab = bullet;
+            Shooting.force = ProjectileProperties.bulletForce;
+            Shooting.timeBetweenFiring = PlayerScript.Bullet.GetComponent<ProjectileDamage>().rate;
+            Shooting.shootingParticle = bulletVFX;
+
+            shootingAS.clip = bulletShoot;
+
+            pickUpAS.Play();
+            pickBullet.Play();
+
+            isFire = false;
+            isIce = false;
+            isPoison = false;
+            isBullet = true;
+            isMissile = false;
+            isArrow = false;
+            isElectric = false;
+            isSword = false;
+
+            fireWand.GetComponent<SpriteRenderer>().enabled = false;
+            iceWand.GetComponent<SpriteRenderer>().enabled = false;
+            snake.GetComponent<SpriteRenderer>().enabled = false;
+            autoGun.GetComponent<SpriteRenderer>().enabled = true;
+            bazooka.GetComponent<SpriteRenderer>().enabled = false;
+            bow.GetComponent<SpriteRenderer>().enabled = false;
+            lightning.GetComponent<SpriteRenderer>().enabled = false;
+            sword.GetComponent<SpriteRenderer>().enabled = false;
+
+            PlayerPrefs.DeleteKey("Weapon");
+            PlayerPrefs.SetString("Weapon", "Gun");
+            PlayerPrefs.SetInt("GunUnlocked", 1);
+        }
+    }
+
+    public void BazookaPickup()
+    {
+        if (!isMissile)
+        {
+            Shooting.projectilePrefab = missile;
+            Shooting.force = ProjectileProperties.missileForce;
+            Shooting.timeBetweenFiring = PlayerScript.Missile.GetComponent<ProjectileDamage>().rate;
+            Shooting.shootingParticle = missileVFX;
+
+            shootingAS.clip = missileShoot;
+
+            pickUpAS.Play();
+            pickMissile.Play();
+
+            isFire = false;
+            isIce = false;
+            isPoison = false;
+            isBullet = false;
+            isMissile = true;
+            isArrow = false;
+            isElectric = false;
+            isSword = false;
+
+            fireWand.GetComponent<SpriteRenderer>().enabled = false;
+            iceWand.GetComponent<SpriteRenderer>().enabled = false;
+            snake.GetComponent<SpriteRenderer>().enabled = false;
+            autoGun.GetComponent<SpriteRenderer>().enabled = false;
+            bazooka.GetComponent<SpriteRenderer>().enabled = true;
+            bow.GetComponent<SpriteRenderer>().enabled = false;
+            lightning.GetComponent<SpriteRenderer>().enabled = false;
+            sword.GetComponent<SpriteRenderer>().enabled = false;
+
+            PlayerPrefs.DeleteKey("Weapon");
+            PlayerPrefs.SetString("Weapon", "Bazooka");
+            PlayerPrefs.SetInt("BazookaUnlocked", 1);
+        }
+    }
+
+    public void BowPickup()
+    {
+        if (!isArrow)
+        {
+            Shooting.projectilePrefab = arrow;
+            Shooting.force = ProjectileProperties.arrowForce;
+            Shooting.timeBetweenFiring = PlayerScript.Arrow.GetComponent<ProjectileDamage>().rate;
+            Shooting.shootingParticle = bowVFX;
+
+            shootingAS.clip = bowShoot;
+
+            pickUpAS.Play();
+            pickBow.Play();
+
+            isFire = false;
+            isIce = false;
+            isPoison = false;
+            isBullet = false;
+            isMissile = false;
+            isArrow = true;
+            isElectric = false;
+            isSword = false;
+
+            fireWand.GetComponent<SpriteRenderer>().enabled = false;
+            iceWand.GetComponent<SpriteRenderer>().enabled = false;
+            snake.GetComponent<SpriteRenderer>().enabled = false;
+            autoGun.GetComponent<SpriteRenderer>().enabled = false;
+            bazooka.GetComponent<SpriteRenderer>().enabled = false;
+            bow.GetComponent<SpriteRenderer>().enabled = true;
+            lightning.GetComponent<SpriteRenderer>().enabled = false;
+            sword.GetComponent<SpriteRenderer>().enabled = false;
+
+            PlayerPrefs.DeleteKey("Weapon");
+            PlayerPrefs.SetString("Weapon", "Bow");
+            PlayerPrefs.SetInt("BowUnlocked", 1);
+        }
+    }
+
+    public void ElectricPickup()
+    {
+        if (!isElectric)
+        {
+            Shooting.projectilePrefab = electric;
+            Shooting.force = ProjectileProperties.electricForce;
+            Shooting.timeBetweenFiring = PlayerScript.Electric.GetComponent<ProjectileDamage>().rate;
+            Shooting.shootingParticle = electricVFX;
+
+            shootingAS.clip = electricShoot;
+
+            pickUpAS.Play();
+            pickElectric.Play();
+
+            isFire = false;
+            isIce = false;
+            isPoison = false;
+            isBullet = false;
+            isMissile = false;
+            isArrow = false;
+            isElectric = true;
+            isSword = false;
+
+            fireWand.GetComponent<SpriteRenderer>().enabled = false;
+            iceWand.GetComponent<SpriteRenderer>().enabled = false;
+            snake.GetComponent<SpriteRenderer>().enabled = false;
+            autoGun.GetComponent<SpriteRenderer>().enabled = false;
+            bazooka.GetComponent<SpriteRenderer>().enabled = false;
+            bow.GetComponent<SpriteRenderer>().enabled = false;
+            lightning.GetComponent<SpriteRenderer>().enabled = true;
+            sword.GetComponent<SpriteRenderer>().enabled = false;
+
+            PlayerPrefs.DeleteKey("Weapon");
+            PlayerPrefs.SetString("Weapon", "Electric");
+            PlayerPrefs.SetInt("ElectricUnlocked", 1);
+        }
+    }
+
+    public void SwordPickup()
+    {
+        if (!isSword)
+        {
+            Shooting.projectilePrefab = swordAttack;
+            Shooting.force = ProjectileProperties.swordForce;
+            Shooting.timeBetweenFiring = PlayerScript.Sword.GetComponent<ProjectileDamage>().rate;
+            Shooting.shootingParticle = swordVFX;
+
+            shootingAS.clip = swordShoot;
+
+            pickUpAS.Play();
+            pickSword.Play();
+
+            isFire = false;
+            isIce = false;
+            isPoison = false;
+            isBullet = false;
+            isMissile = false;
+            isArrow = false;
+            isElectric = false;
+            isSword = true;
+
+            fireWand.GetComponent<SpriteRenderer>().enabled = false;
+            iceWand.GetComponent<SpriteRenderer>().enabled = false;
+            snake.GetComponent<SpriteRenderer>().enabled = false;
+            autoGun.GetComponent<SpriteRenderer>().enabled = false;
+            bazooka.GetComponent<SpriteRenderer>().enabled = false;
+            bow.GetComponent<SpriteRenderer>().enabled = false;
+            lightning.GetComponent<SpriteRenderer>().enabled = false;
+            sword.GetComponent<SpriteRenderer>().enabled = true;
+
+            PlayerPrefs.DeleteKey("Weapon");
+            PlayerPrefs.SetString("Weapon", "Sword");
+            PlayerPrefs.SetInt("SwordUnlocked", 1);
+        }
+    }
+    #endregion
 }

@@ -4,26 +4,20 @@ using UnityEngine;
 
 public class StatusEffectManager : MonoBehaviour
 {
-    Enemy Enemy;
-    EnemyFollow EnemyFollow;
+    private Enemy Enemy;
 
-    public List<int> burnTickTimers = new();
-    public List<int> poisonTickTimers = new();
+    private List<int> burnTickTimers = new();
+    private List<int> poisonTickTimers = new();
 
-    public static bool isBurning, isPoisoned, isSlowed;
+    public static bool isBurning, isPoisoned;
 
-    Color defaultColor;
-    float speed;
+    [SerializeField] private float slowTime;
 
-    public float slowTime;
+    public float fireTickDamage, poisonTickDamage;
 
     void Start()
     {
         Enemy = gameObject.GetComponent<Enemy>();
-        EnemyFollow = gameObject.GetComponent<EnemyFollow>();
-
-        defaultColor = Color.red;
-        speed = EnemyFollow.speed;
     }
 
     public void ApplyBurn(int ticks)
@@ -49,13 +43,12 @@ public class StatusEffectManager : MonoBehaviour
             }
 
             isBurning = true;
-            Enemy.TakeDamage(4);
+            Enemy.TakeDamage(fireTickDamage);
             burnTickTimers.RemoveAll(i => i == 0);
             Enemy.burnEffect.Play();
 
             if (Enemy.currentHealth <= 0)
             {
-                Enemy.Die();
                 Enemy.burnEffect.Stop();
                 break;
             }
@@ -93,13 +86,12 @@ public class StatusEffectManager : MonoBehaviour
             }
 
             isPoisoned = true;
-            Enemy.TakeDamage(0.5f);
+            Enemy.TakeDamage(poisonTickDamage);
             poisonTickTimers.RemoveAll(i => i == 0);
             Enemy.poisonEffect.Play();
 
             if (Enemy.currentHealth <= 0)
             {
-                Enemy.Die();
                 Enemy.poisonEffect.Stop();
                 break;
             }
@@ -111,40 +103,6 @@ public class StatusEffectManager : MonoBehaviour
             }
 
             yield return new WaitForSeconds(0.2f);
-        }
-    }
-
-    public void ApplySlow(int ticks)
-    {
-        if (slowTime <= 0)
-        {
-            slowTime += ticks;
-            StartCoroutine(Slow());
-        }
-        else
-        {
-            slowTime += ticks;
-        }
-    }
-
-    IEnumerator Slow()
-    {
-        while (slowTime > 0)
-        {
-            slowTime--;
-
-            isSlowed = true;
-            EnemyFollow.speed = speed - (speed * 25 / 100);
-            Enemy.thisRenderer.color = Color.cyan;
-                     
-            yield return new WaitForSeconds(1f);
-        }
-
-        if(slowTime <= 0)
-        {
-            isSlowed = false;
-            EnemyFollow.speed = speed; ;
-            Enemy.thisRenderer.color = defaultColor;
         }
     }
 }

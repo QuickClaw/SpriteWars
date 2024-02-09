@@ -2,15 +2,12 @@ using UnityEngine;
 
 public class DestroyObject : MonoBehaviour
 {
-    public int destroyTime;
+    [SerializeField] private float destroyTime;
+
+    public int penetrationCount;
 
     void Start()
     {
-        Invoke(nameof(DestroyGameObject), destroyTime);
-    }
-
-    void DestroyGameObject()
-    {
-        Destroy(gameObject);
+        Destroy(gameObject, destroyTime);
     }
 }
